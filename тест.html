@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ҰБТ Информатика — Тестілеу жүйесі</title>
+<style>
+:root{--bg:#f8fafc;--card:#ffffff;--ink:#0f172a;--muted:#64748b;--blue:#2563eb;--blue-light:#eff6ff;--green:#16a34a;--green-bg:#f0fdf4;--red:#dc2626;--red-bg:#fef2f2;--border:#e2e8f0;--shadow:0 10px 25px -5px rgba(0,0,0,0.05),0 8px 10px -6px rgba(0,0,0,0.05)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;padding:24px 20px;text-align:center;box-shadow:0 4px 12px rgba(37,99,235,0.15)}
+header h1{margin:0 0 4px;font-size:clamp(1.4rem,3vw,2rem);font-weight:800}
+header p{margin:0;opacity:.9;font-size:.9rem}
+main{max-width:900px;margin:20px auto;padding:0 16px 40px}
+.dashboard{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);padding:14px 20px;border-radius:14px;margin-bottom:20px;flex-wrap:wrap;gap:15px}
+.dash-info{font-weight:600;color:var(--muted);font-size:.9rem}
+.progress-bar-container{width:100%;height:8px;background:#f1f5f9;border-radius:99px;overflow:hidden;margin-top:6px}
+.progress-bar{height:100%;width:0;background:var(--blue);transition:width .3s}
+.score-badge{font-weight:800;color:var(--blue);font-size:1.1rem}
+.qnav{display:flex;flex-wrap:wrap;gap:6px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);margin-bottom:20px}
+.qnav button{width:36px;height:36px;border:1px solid var(--border);border-radius:8px;background:#f8fafc;color:var(--ink);font-weight:700;font-size:.85rem;cursor:pointer;transition:.2s}
+.qnav button.current{background:var(--blue);border-color:var(--blue);color:#fff}
+.qnav button.done{background:var(--green-bg);border-color:#bbf7d0;color:var(--green)}
+.qnav button.bad{background:var(--red-bg);border-color:#fecaca;color:var(--red)}
+.question{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow);display:none}
+.question.active{display:block}
+.qtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.qnum{font-size:.8rem;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.05em}
+.points{font-size:.75rem;font-weight:700;background:#f1f5f9;color:var(--muted);padding:3px 8px;border-radius:99px}
+.qtitle{font-weight:700;font-size:1.05rem;margin-bottom:14px;color:var(--ink)}
+.code-box{background:#0f172a;color:#e2e8f0;padding:12px 16px;border-radius:10px;font:14px/1.6 monospace;margin:10px 0 16px;overflow-x:auto}
+.options{display:grid;gap:10px}
+.option{display:flex;align-items:flex-start;gap:10px;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:.15s;background:#fff}
+.option:hover{border-color:#93c5fd;background:var(--blue-light)}
+.option input{margin-top:3px;accent-color:var(--blue)}
+.option.correct{border-color:var(--green);background:var(--green-bg);color:#14532d}
+.option.wrong{border-color:var(--red);background:var(--red-bg);color:#7f1d1d}
+.feedback{display:none;margin-top:14px;padding:12px;border-radius:10px;font-size:.9rem}
+.feedback.show{display:block}
+.feedback.ok{background:var(--green-bg);color:#14532d;border:1px solid #bbf7d0}
+.feedback.bad{background:var(--red-bg);color:#7f1d1d;border:1px solid #fecaca}
+.match-grid{display:grid;gap:12px}
+.match-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center}
+@media(max-width:600px){.match-row{grid-template-columns:1fr}}
+.match-row select{width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font:inherit;background:#fff}
+.nav-actions{display:flex;justify-content:space-between;align-items:center;margin:20px 0}
+.btn{border:0;border-radius:10px;padding:12px 20px;font:inherit;font-weight:700;cursor:pointer;transition:.15s}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,0.2)}
+.btn-primary:hover{background:#1d4ed8}
+.btn-secondary{background:#e2e8f0;color:#334155}
+.btn-secondary:hover{background:#cbd5e1}
+.results{display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px;box-shadow:var(--shadow);margin-top:30px}
+.results.show{display:block}
+.review-item{border:1px solid var(--border);border-radius:10px;padding:14px;margin:12px 0;background:#fafafa}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.75rem;font-weight:700}
+.tag.ok{background:var(--green-bg);color:var(--green)}
+.tag.bad{background:var(--red-bg);color:var(--red)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Информатика · ҰБТ Тестілеу жүйесі</h1>
+  <p>Желі архитектурасы, криптография және Python алгоритмдері</p>
+</header>
+<main>
+<div class="dashboard">
+  <div>
+    <div class="dash-info"><span id="answered">0</span> / 40 сұрақ орындалды</div>
+    <div class="progress-bar-container"><div class="progress-bar" id="progressbar"></div></div>
+  </div>
+  <div class="score-badge"><span id="liveScore">0</span> ұпай</div>
+</div>
+
+<!-- 1–40 сұрақ нөмірлері жоғарыда -->
+<div class="qnav" id="qnav"></div>
+
+<!-- Сұрақтар орналасатын негізгі блок -->
+<div id="quiz"></div>
+
+<div class="nav-actions">
+  <button class="btn btn-secondary" id="prevQ">← Алдыңғы</button>
+  <span id="navStatus" style="font-size:.9rem;color:var(--muted)">1 / 40</span>
+  <button class="btn btn-primary" id="nextQ">Келесі →</button>
+</div>
+
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px">
+  <button class="btn btn-primary" id="finish" style="flex:1">Тестті аяқтау және тексеру</button>
+  <button class="btn btn-secondary" id="clear">Тазалау</button>
+</div>
+
+<section class="results" id="results">
+  <h2>Қорытынды нәтиже</h2>
+  <p id="message" style="color:var(--muted);margin-bottom:20px"></p>
+  <div style="font-size:2rem;font-weight:800;color:var(--blue);margin-bottom:20px"><span id="finalScore">0</span> / 50 ұпай (<span id="percent">0</span>%)</div>
+  
+  <h3>Қатемен жұмыс</h3>
+  <div id="review"></div>
+  
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:24px">
+    <button class="btn btn-primary" id="exportExcel">Excel-ге жүктеу (CSV)</button>
+    <button class="btn btn-secondary" id="retry">Қайта бастау</button>
+  </div>
+</section>
+</main>
+
+<script>
+const single = [
+["Клиент-сервер архитектурасының негізгі сипаттамасы қандай?",["Барлық түйіндер тең құқылы режімде жұмыс істейді","Сервер клиенттердің сұраныстарын өңдеп, ресурс ұсынады","Желі тек сымсыз байланыстан тұрады","Ақпарат тек локальды дискіде сақталады"],1,"Сервер орталықтандырылған түрде сұраныстарды өңдеп, клиенттерге қызмет көрсетеді."],
+["OSI желілік моделі неше деңгейге бөлінеді?",["4","5","7","9"],2,"OSI эталонды моделі 7 деңгейден тұрады."],
+["IP-мекенжайдың (IPv4) негізгі қызметі қандай?",["Мәліметтерді симметриялы шифрлау","Желідегі құрылғыларды логикалық адрестеу және бағыттау","Компьютердің оперативті жадысын ұлғайту","Вирустарды анықтау"],1,"IP-мекенжай пакеттерді желі арасында бағыттау және құрылғыларды анықтау үшін қолданылады."],
+["TCP хаттамасының сенімділігі немен қамтамасыз етіледі?",["Хабарламалардың жеткізілуін бақылау және қателерді тексеру арқылы","Мәліметтерді қысу арқылы","Тек сымсыз желілерде жұмыс істеуі арқылы","IP адресті автоматты өзгерту арқылы"],0,"TCP байланыс орнатып, пакеттердің толық және ретімен жетуін бақылайды."],
+["MAC-мекенжай бойынша аппараттық деңгейде кадрларды бағыттайтын құрылғы:",["Маршрутизатор","Коммутатор (Switch)","Модем","Хаб"],1,"Коммутатор MAC-кестелерді қолданып, кадрды тек қажетті портқа бағыттайды."],
+["DNS қызметінің атқаратын негізгі міндеті:",["Домендік атауларды IP-мекенжайларға түрлендіру","Интернет жылдамдығын тексеру","Файлдарды архивтеу","Құпиясөздерді сақтау"],0,"DNS символдық домен атауларын сандық IP-мекенжайға айналдырады."],
+["DHCP хаттамасының қызметі:",["IP параметрлерін автоматты түрде тағайындау","Электрондық хаттарды жеткізу","Веб-беттерді құру","Деректер қорын басқару"],0,"DHCP желілік құрылғыларға IP, шлюз және DNS мекенжайларын динамикалық түрде береді."],
+["Маршрутизатордың (Router) басты атқаратын функциясы:",["Әр түрлі желілер арасында пакеттерді бағыттау","Принтерді қосу","Экран ажыратымдылығын реттеу","Мәтіндік файлды өңдеу"],0,"Маршрутизатор әр түрлі желілерді байланыстырып, ең тиісті жолмен пакет жібереді."],
+["OSI моделінің қай деңгейі IP адрестеу мен маршруттауды қамтиды?",["Физикалық деңгей","Арналық деңгей","Желілік деңгей","Сеанстық деңгей"],2,"IP адрестеу мен пакеттерді бағыттау OSI желілік деңгейіне жатады."],
+["Ethernet технологиясы қай желі түрінде кең қолданылады?",["Жергілікті желіде (LAN)","Тек ғарыштық байланыста","Тек ұялы байланыста","Текрадиожеліде"],0,"Ethernet — сымды жергілікті желілердің стандартты технологиясы."],
+["HTTPS хаттамасының қауіпсіздігі қандай қосымша технологияға негізделген?",["TLS / SSL криптографиялық протоколына","Bluetooth стандартына","MAC сүзуге","Тек HTML тегтеріне"],0,"HTTPS деректерді шифрлау үшін TLS/SSL қауіпсіздік қабатын қолданады."],
+["Симметриялық шифрлаудың басты ерекшелігін атаңыз:",["Шифрлау және дешифрлау үшін бірдей құпия кілт қолданылады","Екі әр түрлі кілт қолданылады","Кілт мүлде қолданылмайды","Тек цифрлық қолтаңба жүреді"],0,"Симметриялық әдісте бір ғана ортақ құпия кілт пайдаланылады."],
+["Асимметриялық криптографиялық жүйелерде қандай кілттер жұбы қолданылады?",["Ашық және жабық кілт","Тек бір ортақ кілт","Бастапқы және соңғы пароль","MAC және IP"],0,"Асимметриялық жүйеде ашық кілт шифрлайды, ал жабық кілт дешифрлайды."],
+["Хэш-функцияның негізгі қасиеті қандай?",["Кез келген көлемдегі ақпаратты тұрақты ұзындықтағы кодқа айналдыру","Мәліметті шифрдан кері ашу","Желіні жылдамдату","IP мекенжайды жасыру"],0,"Хэш-функция бір бағытты түрлендіру жасап, тұрақты өлшемді мән береді."],
+["Цифрлық қолтаңба нені дәлелдеу үшін қажет?",["Ақпараттың тұтастығы мен автордың түпнұсқалығын растау","Файл көлемін кішірейту","Компьютерді жылдамдату","Интернет трафигін үнемдеу"],0,"Цифрлық қолтаңба файлдың өзгермегенін және нақты иесінен шыққанын көрсетеді."],
+["Брандмауэрдің (Firewall) атқаратын қызметі:",["Желілік трафикті қауіпсіздік ережелері бойынша сүзу","Құрылғыны зарядтау","Экранды қорғау","Компьютерді өшіру"],0,"Брандмауэр рұқсат етілмеген желілік қосылымдарды бұғаттайды."],
+["Фишинг шабуылының мақсаты қандай?",["Жалған сайттар мен хаттар арқылы құпия ақпаратты ұрлау","Желі кабелін зақымдау","Операциялық жүйені өшіру","Компьютерді қызыдыру"],0,"Фишинг пайдаланушыны алдап, құпиясөз немесе банк картасы мәліметтерін алуға бағытталады."],
+["VPN (Virtual Private Network) технологиясы не үшін қолданылады?",["Қорғалған шифрланған туннель арқылы қауіпсіз байланыс орнату","Жады көлемін арттыру","Процессор жиілігін көтеру","Аудио файлдарды ойнату"],0,"VPN жалпы желі ішінде виртуалды қауіпсіз арна құрады."],
+["IPv4 протоколының мекенжайы неше биттен тұрады?",["16 бит","32 бит","64 бит","128 бит"],1,"IPv4 адресі 32 биттік саннан тұрады."],
+["IPv6 протоколының мекенжайы неше биттен тұрады?",["32 бит","64 бит","96 бит","128 бит"],3,"IPv6 адресі 128 биттік ұзындыққа ие."],
+["TCP және UDP хаттамалары OSI моделінің қай деңгейіне жатады?",["Көліктік деңгей (Transport)","Физикалық деңгей","Арналық деңгей","Қолданбалы деңгей"],0,"TCP пен UDP — көліктік деңгей хаттамалары."],
+["Электрондық поштаны қабылдау мен жіберуге арналған негізгі хаттама:",["SMTP / IMAP / POP3","FTP","HTTP","ARP"],0,"SMTP жіберуге, ал IMAP/POP3 қабылдауға қолданылады."],
+["FTP хаттамасының негізгі мақсаты:",["Файлдарды сервер мен клиент арасында тасымалдау","Домен тіркеу","IP есептеу","Хаттарды шифрлау"],0,"FTP (File Transfer Protocol) файл алмасу үшін арналған."],
+["ARP хаттамасының атқаратын қызметі:",["IPv4 мекенжайы бойынша физикалық MAC-мекенжайды анықтау","Домен атауын табу","Электрондық хат жіберу","Құпиясөз хэштеу"],0,"ARP локальды желіде IP-ні MAC-қа сәйкестендіреді."],
+["Құпиясөздерді сақтауда криптографиялық тұзды (salt) қолдану себебі:",["Брутфорс және түпнұсқа кестелік шабуылдардан қорғау","Интернет жылдамдығын арттыру","Құпиясөзді ашық түрде көрсету","Жадты үнемдеу"],0,"Salt әр құпиясөзге әртүрлі кездейсоқ байт қосып, хэштердің бірдей болуын болдырмайды."]
+];
+
+// 26-30 Python сұрақтары (төмендегі функцияны талдау арқылы 4 вариантпен)
+const pythonTestQs = [
+["26. Төмендегі функцияны талдап, нәтижесін табыңыз:\n<code>def esep(a, b):\n    s = 0\n    for x in range(a, b + 1):\n        if x % 2 == 0:\n            s += x\n    return s\nprint(esep(2, 8))</code>", ["18", "20", "22", "24"], 1, "2-ден 8-ге дейінгі жұп сандар: 2, 4, 6, 8. Қосындысы: 2 + 4 + 6 + 8 = 20."],
+["27. Төмендегі функцияны талдап, <code>range(2, b + 1)</code> өрнегіндегі <code>b + 1</code> жазылу себебін анықтаңыз:\n<code>def esep(a, b):\n    s = 0\n    for x in range(a, b + 1):\n        if x % 2 == 0:\n            s += x\n    return s</code>", ["range соңғы мәнді қоспайды", "Тек жұп сандарды алу үшін", "Циклді шексіз ету үшін", "Айнымалыны өшіру үшін"], 0, "Python-да range функциясы соңғы көрсетілген мәнді қамтымайды."],
+["28. Төмендегі функцияны талдап, <code>x % 2 == 0</code> шарты нені білдіретінін анықтаңыз:\n<code>def esep(a, b):\n    s = 0\n    for x in range(a, b + 1):\n        if x % 2 == 0:\n            s += x\n    return s</code>", ["Санның тақ екенін", "Санның жұп екенін", "Санның 0 екенін", "Санның теріс екенін"], 1, "Қалдықты 2-ге бөлгенде 0 болса, сан жұп болады."],
+["29. Төмендегі функцияны талдап, <code>esep(1, 5)</code> шақырғандағы нәтижені табыңыз:\n<code>def esep(a, b):\n    s = 0\n    for x in range(a, b + 1):\n        if x % 2 == 0:\n            s += x\n    return s</code>", ["4", "5", "6", "10"], 2, "1 мен 5 аралығындағы жұп сандар: 2 және 4. Қосындысы: 2 + 4 = 6."],
+["30. Төмендегі функцияны талдап, егер <code>s = 0</code> орнына <code>s = 1</code> болса, <code>esep(2, 4)</code> нәтижесін табыңыз:\n<code>def esep(a, b):\n    s = 1\n    for x in range(a, b + 1):\n        if x % 2 == 0:\n            s += x\n    return s</code>", ["6", "7", "8", "9"], 1, "Бастапқы мән 1 болады, оған 2 мен 4 қосылады: 1 + 2 + 4 = 7."]
+];
+
+const matchSets=[
+{title:"31. Желілік хаттамаларды қызметімен сәйкестендіріңіз (2 сәйкестік).",left:["DNS","DHCP"],right:["Домен атауын IP-ге түрлендіру","Файлдарды шифрлау","IP параметрлерін автоматты тарату","Веб-бетті безендіру"],correct:[0,2]},
+{title:"32. Криптографиялық әдістерді анықтамасымен сәйкестендіріңіз (2 сәйкестік).",left:["Симметриялық шифрлау","Асимметриялық шифрлау"],right:["Ашық және жабық кілттер жұбы","Бір ортақ құпия кілт","IP мекенжай тағайындау","Домен тіркеу"],correct:[1,0]},
+{title:"33. OSI деңгейлерін атқаратын қызметімен сәйкестендіріңіз (2 сәйкестік).",left:["Физикалық деңгей","Желілік деңгей"],right:["Биттерді сигнал арқылы тасымалдау","Кадрларды MAC бойынша жіберу","IP адрестеу және маршруттау","Қолданбалы интерфейс"],correct:[0,2]},
+{title:"34. Қауіпсіздік құралдарын қызметімен сәйкестендіріңіз (2 сәйкестік).",left:["Брандмауэр","VPN"],right:["Файлдарды сығу","Желілік трафикті ережемен сүзу","IP автоматты беру","Қорғалған шифрланған туннель құру"],correct:[1,3]},
+{title:"35. Желілік жабдықтарды қызметімен сәйкестендіріңіз (2 сәйкестік).",left:["Маршрутизатор","Коммутатор"],right:["Әр түрлі желілер арасында пакет бағыттау","Домен атауын IP-ге айналдыру","Локальды желіде MAC бойынша кадр жіберу","Электрондық хат жіберу"],correct:[0,2]}
+];
+
+const multi=[
+["36. Ақпаратты желі арқылы тасымалдауда қауіпсіздікті күшейтетін тәсілдерді таңдаңыз.",["TLS протоколы арқылы байланысты қорғау","Құпиясөздерді ашық мәтін түрінде сақтау","Цифрлық сертификаттарды тексеру","Барлық пайдаланушыға әкімші құқығын беру","Құпиясөздерге salt қолданып хэштеу","Күмәнді сілтемелермен өту"],[0,2,4],"TLS, сертификаттар және salt қосылған хэштеу қауіпсіздікті арттырады."],
+["37. OSI желілік моделіне қатысты дұрыс тұжырымдарды анықтаңыз.",["Физикалық деңгей биттерді сигнал түрінде тасымалдайды","Арналық деңгей MAC-мекенжайлармен жұмыс істейді","Желілік деңгей IP адрестеу мен маршруттауды атқарады","HTTP — көліктік деңгей хаттамасы","TCP — көліктік деңгей хаттамасы","OSI моделі 9 деңгейден тұрады"],[0,1,2,4],"HTTP қолданбалы деңгейге жатады, ал OSI моделі 7 деңгейден тұрады."],
+["38. Криптография және хэштеу туралы дұрыс тұжырымдарды таңдаңыз.",["Симметриялық шифрлауда ортақ құпия кілт қолданылады","Асимметриялық жүйеде ашық және жабық кілт қолданылады","Хэштеу — кілт арқылы кері қайтарылатын шифр түрі","Цифрлық қолтаңба мәлімет тұтастығын тексереді","Жабық кілтті барлық пайдаланушыға тарату керек","Хэш-функция нәтижесі тұрақты ұзындықта болады"],[0,1,3,5],"Хэштеу бір бағытты процесс; жабық кілт қатаң түрде құпия сақталуы тиіс."],
+["39. Желілік құрылғылар мен қызметтерге қатысты дұрыс тұжырымдар:",["Маршрутизатор әр түрлі желілер арасында пакет бағыттайды","Коммутатор кадрларды MAC-мекенжай бойынша таратады","DNS доменді IP-мекенжайға сәйкестендіреді","DHCP — файлдарды шифрлау құралы","Брандмауэр трафикті ереже бойынша сүзеді","IPv4 адресі 128 биттен тұрады"],[0,1,2,4],"IPv4 мекенжайы 32 биттен тұрады."],
+["40. Киберқауіпсіздік ережелері мен дұрыс тәжірибелерді таңдаңыз:",["Көп факторлы аутентификацияны (MFA) қолдану","Барлық сайттар үшін бірдей құпиясөз пайдалану","Бағдарламалық қамтамасыз етуді уақытылы жаңарту","Күмәнді файлдар мен сілтемелерді тексерусіз ашу","Маңызды деректердің резервтік көшірмесін жасау","Жабық кілтті әлеуметтік желіде жариялау"],[0,2,4],"MFA, жүйелік жаңартулар және резервтік көшірме жасау қауіпсіздік кепілі болып табылады."]
+];
+
+const quiz=document.getElementById('quiz');
+const letters=['A','B','C','D','E','F'];
+
+function makeQuestion(num,title,points,content,type,meta={}){
+  const card=document.createElement('article');
+  card.className='question';
+  card.id='q'+num;
+  card.dataset.num=num;
+  card.dataset.type=type;
+  card.dataset.points=points;
+  card.dataset.meta=JSON.stringify(meta);
+  
+  // Егер 26-30 сұрақтар болса, кодты арнайы блокта (code-box) шығару
+  let formattedTitle = title;
+  let codeBlock = '';
+  if(num >= 26 && num <= 30) {
+    let parts = title.split('<code>');
+    formattedTitle = parts[0];
+    if(parts[1]) {
+      let codeParts = parts[1].split('</code>');
+      codeBlock = `<div class="code-box">${codeParts[0].replace(/\\n/g, '<br>')}</div>`;
+    }
+  }
+
+  card.innerHTML=`<div class="qtop"><span class="qnum">Сұрақ ${num}</span><span class="points">${points} балл</span></div><div class="qtitle">${formattedTitle}</div>${codeBlock}${content}<div class="feedback" id="fb${num}"></div>`;
+  quiz.appendChild(card);
+  return card;
+}
+
+function render(){
+  single.forEach((q,i)=>{const n=i+1;let opts='<div class="options">'+q[1].map((v,j)=>`<label class="option" data-index="${j}"><input type="radio" name="q${n}" value="${j}"><span><b>${letters[j]}.</b> ${v}</span></label>`).join('')+'</div>';makeQuestion(n,q[0],1,opts,'single',{correct:q[2],explain:q[3],options:q[1]})});
+  pythonTestQs.forEach((q,i)=>{const n=i+26;let opts='<div class="options">'+q[1].map((v,j)=>`<label class="option" data-index="${j}"><input type="radio" name="q${n}" value="${j}"><span><b>${letters[j]}.</b> ${v}</span></label>`).join('')+'</div>';makeQuestion(n,q[0],1,opts,'single',{correct:q[2],explain:q[3],options:q[1]})});
+  matchSets.forEach((m,i)=>{let n=i+31;let opts=m.right.map((v,j)=>({v,j}));let rows=m.left.map((v,j)=>`<div class="match-row"><label>${letters[j]}. ${v}</label><select data-match="${j}"><option value="">Таңдаңыз…</option>${opts.map(o=>`<option value="${o.j}">${letters[o.j]}.${o.v}</option>`).join('')}</select></div>`).join('');makeQuestion(n,m.title,2,`<div class="match-grid">${rows}</div>`,'match',{left:m.left,right:m.right,correct:m.correct,explain:'Дұрыс сәйкестіктер: '+m.left.map((x,j)=>x+' — '+m.right[m.correct[j]]).join('; ')+'.'})});
+  multi.forEach((q,i)=>{let n=i+36;let opts='<div class="options">'+q[1].map((v,j)=>`<label class="option"><input type="checkbox" name="q${n}" value="${j}"><span><b>${letters[j]}.</b> ${v}</span></label>`).join('')+'</div>';makeQuestion(n,q[0],2,opts,'multi',{correct:q[2],options:q[1],explain:q[3]})});
+}
+render();
+
+const cards=[...document.querySelectorAll('#quiz .question')];
+let currentQ=1;
+const qnav=document.getElementById('qnav');
+for(let n=1;n<=40;n++){
+  const b=document.createElement('button');
+  b.type='button';
+  b.textContent=n;
+  b.addEventListener('click',()=>showQuestion(n));
+  qnav.appendChild(b);
+}
+
+function showQuestion(n){
+  if(n<1||n>40)return;
+  currentQ=n;
+  cards.forEach(c=>c.classList.toggle('active',Number(c.dataset.num)===n));
+  [...qnav.querySelectorAll('button')].forEach((b,i)=>{
+    b.classList.toggle('current',i+1===n);
+    b.classList.toggle('done',cards[i].dataset.answered==='1'&&document.body.dataset.finished!=='1');
+    b.classList.toggle('bad',document.body.dataset.finished==='1'&&cards[i].dataset.ok==='0');
+  });
+  document.getElementById('navStatus').textContent=`${n} / 40 сұрақ`;
+  document.getElementById('prevQ').disabled=n===1;
+  document.getElementById('nextQ').textContent=n===40?'Соңғы сұрақ':'Келесі →';
+  document.getElementById('nextQ').disabled=n===40;
+}
+
+document.getElementById('prevQ').addEventListener('click',()=>showQuestion(currentQ-1));
+document.getElementById('nextQ').addEventListener('click',()=>showQuestion(currentQ+1));
+
+function readAnswer(card){
+  const type=card.dataset.type;
+  if(type==='single'){const x=card.querySelector('input[type=radio]:checked');return x?Number(x.value):null}
+  if(type==='match')return [...card.querySelectorAll('select')].map(x=>x.value===''?null:Number(x.value));
+  if(type==='multi')return [...card.querySelectorAll('input[type=checkbox]:checked')].map(x=>Number(x.value)).sort((a,b)=>a-b);
+}
+function isAnswered(a,type){
+  if(type==='match')return a.some(x=>x!==null);
+  if(type==='multi')return a.length>0;
+  return a!==null;
+}
+
+function check(card){
+  const n=Number(card.dataset.num),type=card.dataset.type,meta=JSON.parse(card.dataset.meta),a=readAnswer(card);
+  let ok=false,earned=0,correctDisplay='',userDisplay='';
+  if(type==='single'){ok=a===meta.correct;earned=ok?1:0;correctDisplay=letters[meta.correct]+'. '+meta.options[meta.correct];userDisplay=a===null?'Жауап берілмеген':letters[a]+'. '+meta.options[a];}
+  if(type==='match'){const correctCount=Array.isArray(a)?a.reduce((sum,v,j)=>sum+(v===meta.correct[j]?1:0),0):0;ok=correctCount===meta.correct.length;earned=correctCount;correctDisplay=meta.left.map((x,j)=>x+' → '+meta.right[meta.correct[j]]).join('; ');userDisplay=meta.left.map((x,j)=>x+' → '+(a[j]===null?'жауап жоқ':meta.right[a[j]])).join('; ');}
+  if(type==='multi'){ok=JSON.stringify(a)===JSON.stringify(meta.correct.slice().sort((x,y)=>x-y));earned=ok?2:0;correctDisplay=meta.correct.map(j=>letters[j]+'. '+meta.options[j]).join(' | ');userDisplay=a.length?a.map(j=>letters[j]+'. '+meta.options[j]).join(' | '):'Жауап берілмеген';}
+  
+  const answered=isAnswered(a,type);
+  card.dataset.earned=earned;
+  card.dataset.ok=ok?'1':'0';
+  card.dataset.answered=answered?'1':'0';
+  card.dataset.user=userDisplay;
+  card.dataset.correct=correctDisplay;
+  card.dataset.explain=meta.explain||'';
+  return {earned,answered,ok};
+}
+
+function updateProgress(){
+  let count=0,score=0;
+  cards.forEach(c=>{if(c.dataset.answered==='1')count++;score+=Number(c.dataset.earned||0)});
+  document.getElementById('answered').textContent=count;
+  document.getElementById('progressbar').style.width=(count/40*100)+'%';
+  document.getElementById('liveScore').textContent=score;
+}
+
+showQuestion(1);
+
+document.addEventListener('change',e=>{
+  if(e.target.matches('input,select')){
+    const card=e.target.closest('.question');
+    if(card&&!document.body.dataset.finished){
+      card.dataset.answered=isAnswered(readAnswer(card),card.dataset.type)?'1':'0';
+      updateProgress();
+      showQuestion(currentQ);
+    }
+  }
+});
+
+document.getElementById('finish').addEventListener('click',()=>{
+  if(document.body.dataset.finished)return;
+  let total=0,answered=0,wrong=[];
+  cards.forEach(c=>{const r=check(c);total+=r.earned;if(r.answered)answered++;if(!r.ok)wrong.push(c)});
+  document.body.dataset.finished='1';
+  document.getElementById('liveScore').textContent=total;
+  document.getElementById('finalScore').textContent=total;
+  document.getElementById('percent').textContent=Math.round(total/50*100);
+  document.getElementById('message').textContent=total>=40?'Өте жоғары нәтиже!':total>=30?'Жақсы нәтиже!':'Қайталау қажет.';
+  
+  const review=document.getElementById('review');review.innerHTML='';
+  wrong.forEach(c=>{
+    const el=document.createElement('div');el.className='review-item';
+    el.innerHTML=`<span class="tag bad">Сұрақ ${c.dataset.num}</span><p><b>${c.querySelector('.qtitle').textContent}</b></p><p style="color:var(--red)">Сіздің жауабыңыз: ${c.dataset.user}</p><p style="color:var(--green)">Дұрыс жауап: ${c.dataset.correct}</p><p style="font-size:.85rem;color:var(--muted)">Түсіндірме: ${c.dataset.explain}</p>`;
+    review.appendChild(el);
+  });
+  if(!wrong.length)review.innerHTML='<p style="color:var(--green)">Барлық сұраққа дұрыс жауап бердіңіз!</p>';
+  
+  document.getElementById('results').classList.add('show');
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+});
+
+document.getElementById('exportExcel').addEventListener('click',()=>{
+  let csv="\uFEFFСұрақ;Сіздің жауабыңыз;Дұрыс жауап;Балл;Мәртебесі\n";
+  cards.forEach(c=>{
+    let title=c.querySelector('.qtitle').textContent.replace(/;/g,',');
+    let u=(c.dataset.user||'Жауап жоқ').replace(/;/g,',');
+    let cor=(c.dataset.correct||'').replace(/;/g,',');
+    let pts=c.dataset.earned||'0';
+    let st=c.dataset.ok==='1'?'Дұрыс':'Қате';
+    csv+=`"${title}";"${u}";"${cor}";${pts};${st}\n`;
+  });
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='UBT_Informatics_Result.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+});
+
+document.getElementById('clear').addEventListener('click',()=>{if(confirm('Барлық жауапты тазалайсыз ба?'))location.reload()});
+document.getElementById('retry').addEventListener('click',()=>location.reload());
+</script>
+</body>
+</html>
